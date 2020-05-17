@@ -26,6 +26,7 @@ class Bplustree{
         Bplustree();
         void insert(int,int);
         void split(int key,node *parent,node *child);
+        node* ancestor(node* parent,node* child);
 };
 
 class Index{

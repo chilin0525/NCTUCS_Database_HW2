@@ -108,22 +108,80 @@ void Bplustree::insert(int key,int value){
 }
 
 void Bplustree::split(int key,node *parent,node *child){
-    if(parent->keys.size()+1<maxChild){
+    if(parent->keys.size()+1<maxChild){ // parent not full
         int index=upper_bound(parent->keys.begin(),parent->keys.end(),key)-parent->keys.begin();
+        //if key is most big
         parent->keys.push_back(key);
         parent->prt_to_subtree.push_back(child);
-
+        // if not,should delete .back() and shift 
         if(index!=parent->keys.size()-1){
             for(int i=parent->keys.size()-1;i>index;--i){
                 parent->keys[i]=parent->keys[i-1];
             }
+            for(int i=parent->prt_to_subtree.size()-1;i>index+1;--i){
+                parent->keys[i]=parent->keys[i-1];
+            }
+            parent->keys[index]=key;
+            parent->prt_to_subtree[index+1]=child;    
         }
-        parent->keys[index]=key;
-        parent->prt_to_subtree.push_back(child);
     }
     else{ // parent will full
+        vector<int> tmpkey(parent->keys);
+        vector<node*> tmp_prt_to_subtree(parent->prt_to_subtree);
+        
+        int index=upper_bound(parent->keys.begin(),parent->keys.end(),key)-parent->keys.begin();
+        tmpkey.push_back(key);
+        tmp_prt_to_subtree.push_back(child);
 
+        if(index!=tmpkey.size()-1){
+            for(int i=tmpkey.size()-1;i>index;--i){
+                tmpkey[i]=tmpkey[i-1];
+            }
+            for(int i=tmp_prt_to_subtree.size()-1;i>index+1;--i){
+                tmp_prt_to_subtree[i]=tmp_prt_to_subtree[i-1];
+            }
+            tmpkey[index]=key;
+            tmp_prt_to_subtree[index+1]=child;
+        }
+
+        int midkey=tmpkey[tmpkey.size()/2];
+        
+        // have all: tmpkey tmp_prt_to_subtree
+        // old     : parent
+
+        parent->keys.resize(tmpkey.size()/2);
+        parent->prt_to_subtree.resize(tmpkey.size()/2+1);
+
+        for(int i=0;i<tmpkey.size()/2;++i){
+            parent->keys[i]=tmpkey[i];
+        }
+
+        for(int i=0;i<tmpkey.size()/2+1;++i){
+            parent->prt_to_subtree[i]=tmp_prt_to_subtree[i];
+        }
+
+        node* newnode=new node;
+        for(int i=tmpkey.size()/2;i<tmpkey.size();++i){
+            newnode->keys.push_back(tmpkey[i]);
+        }
+        for(int i=tmp_prt_to_subtree.size()/2;i<tmp_prt_to_subtree.size();--i){
+            newnode->prt_to_subtree.push_back(tmp_prt_to_subtree[i]);
+        }
+
+        // done----------------
+
+        if(parent==root){
+
+        }
+        else{
+            // recursion
+            split(midkey,ancestor(root,parent),newnode);
+        }
     }
+}
+
+node* ancestor(node *parent,node *child){
+    
 }
 
 void Index::key_query(const vector<int> &query_keys){
