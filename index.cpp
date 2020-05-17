@@ -16,8 +16,8 @@ node::node(){
 
 Bplustree::Bplustree(){
     this->root=NULL;
-    this->maxChild=10000;   
-    this->maxLeafnode=9999;
+    this->maxChild=10;   
+    this->maxLeafnode=10;
 }
 
 Index::Index(const int num_rows,const vector<int> &key,const vector<int> &value){
@@ -52,10 +52,11 @@ void Bplustree::insert(int key,int value){
             cursor->keys[index]=key;
             cursor->data[index]=value;
         }
-        else{   //not full case
+        else{   //full case
             vector<int> tmpkey(cursor->keys);
             vector<int> tmpdata(cursor->data);
             node* newnode;
+            newnode->isleaf=true;
 
             int index=upper_bound(cursor->keys.begin(),cursor->keys.end(),key)-cursor->keys.begin();
             tmpkey.push_back(key);
@@ -78,9 +79,50 @@ void Bplustree::insert(int key,int value){
             cursor->next=newnode;
             newnode->next=tmp;
 
+            // cursor->keys old:
+            // newnode : 
+            cursor->keys.resize(maxLeafnode/2+1);
+            cursor->data.resize(maxLeafnode/2+1);
             
+            for(int i=0;i<=maxLeafnode/2;++i){
+                cursor->keys[i]=tmpkey[i];
+                cursor->data[i]=tmpdata[i];
+            }
 
+            for(int i=maxLeafnode/2+1;i<tmpkey.size();++i){
+                newnode->keys.emplace_back(tmpkey[i]);
+                newnode->data.emplace_back(tmpdata[i]);
+            }
+            
+            if(cursor==root){
+                node* newroot=new node;
+                newroot->keys.push_back(newnode->keys[0]);
+                newroot->prt_to_subtree.push_back(cursor);
+                newroot->prt_to_subtree.push_back(newnode);
+            }
+            else{
+                split(newnode->keys[0],parent,newnode);
+            }
         }
+    }
+}
+
+void Bplustree::split(int key,node *parent,node *child){
+    if(parent->keys.size()+1<maxChild){
+        int index=upper_bound(parent->keys.begin(),parent->keys.end(),key)-parent->keys.begin();
+        parent->keys.push_back(key);
+        parent->prt_to_subtree.push_back(child);
+
+        if(index!=parent->keys.size()-1){
+            for(int i=parent->keys.size()-1;i>index;--i){
+                parent->keys[i]=parent->keys[i-1];
+            }
+        }
+        parent->keys[index]=key;
+        parent->prt_to_subtree.push_back(child);
+    }
+    else{ // parent will full
+
     }
 }
 

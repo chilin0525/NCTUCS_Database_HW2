@@ -25,6 +25,7 @@ class Bplustree{
         int maxLeafnode;
         Bplustree();
         void insert(int,int);
+        void split(int key,node *parent,node *child);
 };
 
 class Index{
