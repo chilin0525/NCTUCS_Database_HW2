@@ -10,6 +10,7 @@ using namespace std;
 
 //Build index when index constructor is called
 node* parent2=NULL;
+
 node::node(){
     this->isleaf=false;
     this->next=NULL;
@@ -17,8 +18,8 @@ node::node(){
 
 Bplustree::Bplustree(){
     this->root=NULL;
-    this->maxChild=3;   
-    this->maxLeafnode=3;
+    this->maxChild=100;   
+    this->maxLeafnode=40;
 }
 
 Index::Index(const int num_rows,const vector<int> &key,const vector<int> &value){
@@ -33,10 +34,13 @@ void Bplustree::insert(int key,int value){
         root->isleaf=true;
         root->keys.emplace_back(key);
         root->data.emplace_back(value);
+        //cout<<"i am root"<<endl;
+        return ;
     }
     else{
-        node* cursor=root;
-        node* parent=NULL;
+        //cout<<key<<" "<<value<<endl;
+        node* cursor = root;
+        node* parent = NULL;
 
         while(cursor->isleaf==false){  //until find leaf node
             parent=cursor;
@@ -51,7 +55,7 @@ void Bplustree::insert(int key,int value){
             cursor->data.emplace_back(value);
 
             if(index!=cursor->keys.size()-1){
-                for(int i=cursor->keys.size();i>index;--i){
+                for(int i=cursor->keys.size()-1 ;i>index;--i){
                     cursor->keys[i]=cursor->keys[i-1];
                     cursor->data[i]=cursor->data[i-1];
                 }
@@ -61,15 +65,17 @@ void Bplustree::insert(int key,int value){
             cursor->data[index]=value;
         }
         else{   //full case
+           // cout<<"hi i am bug1 start"<<endl;
             vector<int> tmpkey(cursor->keys);
             vector<int> tmpdata(cursor->data);
-            node* newnode;
+            node* newnode = new node;
             newnode->isleaf=true;
 
             int index=upper_bound(cursor->keys.begin(),cursor->keys.end(),key)-cursor->keys.begin();
             tmpkey.push_back(key);
             tmpdata.push_back(value);
 
+            //cout<<"bug 1 fuckfuck"<<endl;
             // key and value push into tmp node 
             if(index!=tmpkey.size()-1){                    //not end of vector -> shift
                 for(int j=tmpkey.size()-1;j>index;--j){
@@ -79,7 +85,7 @@ void Bplustree::insert(int key,int value){
                 tmpkey[index]=key;
                 tmpdata[index]=value;
             }
-
+            //cout<<"bug 1 fuck"<<endl;
             // swap pointer
             // 1 --> 3
             // 1 -> 2 -> 3
@@ -107,12 +113,20 @@ void Bplustree::insert(int key,int value){
                 newroot->keys.push_back(newnode->keys[0]);
                 newroot->prt_to_subtree.push_back(cursor);
                 newroot->prt_to_subtree.push_back(newnode);
+                root=newroot;
             }
             else{
                 split(newnode->keys[0],&parent,&newnode);
             }
+           // cout<<"i am bug1 end"<<endl;
         }
     }
+    if(key==520176)cout<<"qq "<<root->isleaf<<endl;
+    if(key==1642014)cout<<"qq2"<<endl;
+    if(key==1906416)cout<<"qq3"<<endl;
+    if(key==1778788)cout<<"mid"<<endl;
+    if(key==842287)cout<<"ok? "<<root->isleaf<<endl;
+   // cout<<"insert ok"<<endl;
 }
 
 node** Bplustree::ancestor(node* root,node* child){
@@ -138,6 +152,7 @@ void Bplustree::split(int key,node** parent,node** child){
         (*parent)->keys.push_back(key);
         (*parent)->prt_to_subtree.push_back(*child);
         // if not,should delete .back() and shift 
+
         if(index!=(*parent)->keys.size()-1){
             for(int i=(*parent)->keys.size()-1;i>index;--i){
                 (*parent)->keys[i]=(*parent)->keys[i-1];
@@ -175,6 +190,7 @@ void Bplustree::split(int key,node** parent,node** child){
 
         (*parent)->keys.resize(tmpkey.size()/2);
         (*parent)->prt_to_subtree.resize(tmpkey.size()/2+1);
+        (*parent)->prt_to_subtree.resize(tmpkey.size()/2+1);
 
         for(int i=0;i<tmpkey.size()/2;++i){
             (*parent)->keys[i]=tmpkey[i];
@@ -184,7 +200,9 @@ void Bplustree::split(int key,node** parent,node** child){
             (*parent)->prt_to_subtree[i]=tmp_prt_to_subtree[i];
         }
 
-        node* newnode=new node;
+        node* newnode=new node; // new internal node
+
+        //index should start /2+1
         for(int i=tmpkey.size()/2+1;i<tmpkey.size();++i){
             newnode->keys.push_back(tmpkey[i]);
         }
@@ -192,14 +210,16 @@ void Bplustree::split(int key,node** parent,node** child){
             newnode->prt_to_subtree.push_back(tmp_prt_to_subtree[i]);
         }
 
-        // done----------------
+        // done---------------------------------------------------------
 
         if((*parent)==root){
+        //    cout<<"hi"<<endl;
             node* newroot = new node;
             newroot->keys.push_back(midkey);
             newroot->prt_to_subtree.push_back(*parent);
             newroot->prt_to_subtree.push_back(newnode);
             root=newroot;
+          //  cout<<"i am bug"<<endl;
         }
         else{
             // recursion
@@ -210,10 +230,10 @@ void Bplustree::split(int key,node** parent,node** child){
 
 node::~node(){
     if(next) delete next;
-    for(auto &tmp:prt_to_subtree){
+    /*for(auto &tmp:prt_to_subtree){
         delete tmp;
-    }
-    prt_to_subtree.clear();
+    }*/
+    //prt_to_subtree.clear();
 }
 
 Bplustree::~Bplustree(){
@@ -253,7 +273,10 @@ void Index::key_query(const vector<int> &query_keys){
     ofstream o;
     o.open("key_query_out.txt");
     for (int i = 0; i < query_keys.size(); i++){
+        if(i==query_keys.size()-1)cout<<"here " <<endl;
         o << bptree.search(query_keys[i]) << '\n';
+        //if(i==0)cout<<"here"<<endl;
+        if(i==query_keys.size()-1)cout<<"here"<<endl;
     } 
     o.close();
     return ;

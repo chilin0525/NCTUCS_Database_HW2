@@ -4,7 +4,6 @@ using namespace std;
 
 class node{
     public:    
-        pair<int,int> pair_key_value;
         vector<int>   keys;
         vector<int>   data;
         vector<node*> prt_to_subtree;
@@ -12,7 +11,6 @@ class node{
         node* next;
 
         node();
-        node(int key,int value);
         ~node();
 };
 
