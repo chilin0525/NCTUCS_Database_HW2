@@ -1,6 +1,3 @@
-#ifndef INDEX_H_
-#define INDEX_H_
-
 #include <utility>
 #include <vector>
 using namespace std;
@@ -26,9 +23,10 @@ class Bplustree{
         int maxLeafnode;
         Bplustree();
         void insert(int,int);
-        void split(int key,node *parent,node *child);
-        node* ancestor(node* root,node* child);
-        //  "search"
+        node** ancestor(node* root,node* child);
+        void split(int key,node** parent,node** child);
+        int  search(const int);
+        int range_search(const int,const int);
         ~Bplustree();
 };
 
@@ -42,5 +40,3 @@ class Index{
         void range_query(const vector<pair<int,int> > &query_pairs);
         void clear_index();
 };
-
-#endif

@@ -1,14 +1,15 @@
+#include "index.h"
+
 #include <fstream>
 #include <iostream>
 #include <utility>
 #include <vector>
 #include <iostream>
 #include <algorithm>
-#include "index.h"
 using namespace std;
 
 //Build index when index constructor is called
-
+node* parent2=NULL;
 node::node(){
     this->isleaf=false;
     this->next=NULL;
@@ -16,8 +17,8 @@ node::node(){
 
 Bplustree::Bplustree(){
     this->root=NULL;
-    this->maxChild=10;   
-    this->maxLeafnode=10;
+    this->maxChild=3;   
+    this->maxLeafnode=3;
 }
 
 Index::Index(const int num_rows,const vector<int> &key,const vector<int> &value){
@@ -101,37 +102,53 @@ void Bplustree::insert(int key,int value){
                 newroot->prt_to_subtree.push_back(newnode);
             }
             else{
-                split(newnode->keys[0],parent,newnode);
+                split(newnode->keys[0],&parent,&newnode);
             }
         }
     }
 }
 
-void Bplustree::split(int key,node *parent,node *child){
-    if(parent->keys.size()+1<maxChild){ // parent not full
-        int index=upper_bound(parent->keys.begin(),parent->keys.end(),key)-parent->keys.begin();
+node** Bplustree::ancestor(node* root,node* child){
+    if(root->isleaf || root->prt_to_subtree[0]->isleaf){
+        return NULL;
+    }
+    for(int i=0;i<root->prt_to_subtree.size();i++){
+        if(root->prt_to_subtree[i]==child){
+            parent2=root;
+        }
+        else{
+            node* tmpparent=root->prt_to_subtree[i];
+            ancestor(tmpparent,child);
+        }
+    }
+    return &parent2;
+}
+
+void Bplustree::split(int key,node** parent,node** child){
+    if((*parent)->keys.size()+1<maxChild){ // parent not full
+        int index=upper_bound((*parent)->keys.begin(),(*parent)->keys.end(),key)-(*parent)->keys.begin();
         //if key is most big
-        parent->keys.push_back(key);
-        parent->prt_to_subtree.push_back(child);
+        (*parent)->keys.push_back(key);
+        (*parent)->prt_to_subtree.push_back(*child);
         // if not,should delete .back() and shift 
-        if(index!=parent->keys.size()-1){
-            for(int i=parent->keys.size()-1;i>index;--i){
-                parent->keys[i]=parent->keys[i-1];
+        if(index!=(*parent)->keys.size()-1){
+            for(int i=(*parent)->keys.size()-1;i>index;--i){
+                (*parent)->keys[i]=(*parent)->keys[i-1];
             }
-            for(int i=parent->prt_to_subtree.size()-1;i>index+1;--i){
-                parent->keys[i]=parent->keys[i-1];
+            for(int i=(*parent)->prt_to_subtree.size()-1;i>index+1;--i){
+                (*parent)->keys[i]=(*parent)->keys[i-1];
             }
-            parent->keys[index]=key;
-            parent->prt_to_subtree[index+1]=child;    
+            (*parent)->keys[index]=key;
+            (*parent)->prt_to_subtree[index+1]=*child;    
         }
     }
     else{ // parent will full
-        vector<int> tmpkey(parent->keys);
-        vector<node*> tmp_prt_to_subtree(parent->prt_to_subtree);
+        vector<int> tmpkey((*parent)->keys);
+        vector<node*> tmp_prt_to_subtree((*parent)->prt_to_subtree);
         
-        int index=upper_bound(parent->keys.begin(),parent->keys.end(),key)-parent->keys.begin();
+        int index=upper_bound((*parent)->keys.begin(),(*parent)->keys.end(),key)-(*parent)->keys.begin();
         tmpkey.push_back(key);
-        tmp_prt_to_subtree.push_back(child);
+        tmp_prt_to_subtree.push_back(*child);
 
         if(index!=tmpkey.size()-1){
             for(int i=tmpkey.size()-1;i>index;--i){
@@ -141,7 +158,7 @@ void Bplustree::split(int key,node *parent,node *child){
                 tmp_prt_to_subtree[i]=tmp_prt_to_subtree[i-1];
             }
             tmpkey[index]=key;
-            tmp_prt_to_subtree[index+1]=child;
+            tmp_prt_to_subtree[index+1]=*child;
         }
 
         int midkey=tmpkey[tmpkey.size()/2];
@@ -149,15 +166,15 @@ void Bplustree::split(int key,node *parent,node *child){
         // have all: tmpkey tmp_prt_to_subtree
         // old     : parent
 
-        parent->keys.resize(tmpkey.size()/2);
-        parent->prt_to_subtree.resize(tmpkey.size()/2+1);
+        (*parent)->keys.resize(tmpkey.size()/2);
+        (*parent)->prt_to_subtree.resize(tmpkey.size()/2+1);
 
         for(int i=0;i<tmpkey.size()/2;++i){
-            parent->keys[i]=tmpkey[i];
+            (*parent)->keys[i]=tmpkey[i];
         }
 
         for(int i=0;i<tmpkey.size()/2+1;++i){
-            parent->prt_to_subtree[i]=tmp_prt_to_subtree[i];
+            (*parent)->prt_to_subtree[i]=tmp_prt_to_subtree[i];
         }
 
         node* newnode=new node;
@@ -170,36 +187,18 @@ void Bplustree::split(int key,node *parent,node *child){
 
         // done----------------
 
-        if(parent==root){
+        if((*parent)==root){
             node* newroot = new node;
             newroot->keys.push_back(midkey);
-            newroot->prt_to_subtree.push_back(parent);
+            newroot->prt_to_subtree.push_back(*parent);
             newroot->prt_to_subtree.push_back(newnode);
             root=newroot;
         }
         else{
             // recursion
-            split(midkey,ancestor(root,parent),newnode);
+            split(midkey,ancestor(root,*parent),&newnode);
         }
     }
-}
-
-node* ancestor(node *root,node *child){
-    node* parent;
-    if(root->isleaf || root->prt_to_subtree[0]->isleaf){
-        return NULL;
-    }
-    for(int i=0;i<root->prt_to_subtree.size();i++){
-        if(root->prt_to_subtree[i]==child){
-            parent=child;
-            break;
-        }
-        else{
-            node* tmpparent=root->prt_to_subtree[i];
-            ancestor(tmpparent,child);
-        }
-    }
-    return parent;
 }
 
 node::~node(){
@@ -214,11 +213,52 @@ Bplustree::~Bplustree(){
     if(root)delete root;
 }
 
+int  Bplustree::search(const int key){
+    if(root==NULL){
+        return -1;
+    }
+    else{
+        node* parent=root;
+        while(parent->isleaf==false){
+            int index=upper_bound(parent->keys.begin(),parent->keys.end(),key)-parent->keys.begin();
+            parent=parent->prt_to_subtree[index];
+        }
+        int index=lower_bound(parent->keys.begin(),parent->keys.end(),key)-parent->keys.begin();
+        if(index==parent->keys.size()||parent->keys[index]!=key){
+            return -1;
+        }
+        else{
+            return parent->data[index];
+        }
+    }
+}
+
+int Bplustree::range_search(const int key1,const int key2){
+    int maxn=-1e9;
+    for(int i=key1;i<=key2;++i){
+        int tmp=search(i);
+        maxn=max(maxn,tmp);
+    }
+    return (maxn==-1e9)?-1:maxn;
+}
+
 void Index::key_query(const vector<int> &query_keys){
+    ofstream o;
+    o.open("key_query_out.txt");
+    for (int i = 0; i < query_keys.size(); i++){
+        o << bptree.search(query_keys[i]) << '\n';
+    } 
+    o.close();
     return ;
 }
 
 void Index::range_query(const vector<pair<int,int> > &query_pairs){
+    ofstream o;
+    o.open("range_query_out.txt");
+    for (int i = 0; i < query_pairs.size(); i++){
+        o << bptree.range_search(query_pairs[i].first, query_pairs[i].second) << '\n';
+    }
+    o.close();
     return ;
 }
 
