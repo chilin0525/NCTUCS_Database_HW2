@@ -171,7 +171,11 @@ void Bplustree::split(int key,node *parent,node *child){
         // done----------------
 
         if(parent==root){
-
+            node* newroot = new node;
+            newroot->keys.push_back(midkey);
+            newroot->prt_to_subtree.push_back(parent);
+            newroot->prt_to_subtree.push_back(newnode);
+            root=newroot;
         }
         else{
             // recursion
@@ -180,8 +184,34 @@ void Bplustree::split(int key,node *parent,node *child){
     }
 }
 
-node* ancestor(node *parent,node *child){
-    
+node* ancestor(node *root,node *child){
+    node* parent;
+    if(root->isleaf || root->prt_to_subtree[0]->isleaf){
+        return NULL;
+    }
+    for(int i=0;i<root->prt_to_subtree.size();i++){
+        if(root->prt_to_subtree[i]==child){
+            parent=child;
+            break;
+        }
+        else{
+            node* tmpparent=root->prt_to_subtree[i];
+            ancestor(tmpparent,child);
+        }
+    }
+    return parent;
+}
+
+node::~node(){
+    if(next) delete next;
+    for(auto &tmp:prt_to_subtree){
+        delete tmp;
+    }
+    prt_to_subtree.clear();
+}
+
+Bplustree::~Bplustree(){
+    if(root)delete root;
 }
 
 void Index::key_query(const vector<int> &query_keys){
