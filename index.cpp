@@ -22,7 +22,7 @@ Bplustree::Bplustree(){
 }
 
 Index::Index(const int num_rows,const vector<int> &key,const vector<int> &value){
-    for(int i=1;i<=num_rows;++i){
+    for(int i=0;i<num_rows;++i){
        bptree.insert(key[i],value[i]);
     }
 }
@@ -46,10 +46,17 @@ void Bplustree::insert(int key,int value){
 
         if(cursor->keys.size() < maxLeafnode){
             int index=upper_bound(cursor->keys.begin(),cursor->keys.end(),key)-cursor->keys.begin();
-            for(int i=cursor->keys.size();i>index;--i){
-                cursor->keys[i]=cursor->keys[i-1];
-                cursor->data[i]=cursor->data[i-1];
+            
+            cursor->keys.emplace_back(key);
+            cursor->data.emplace_back(value);
+
+            if(index!=cursor->keys.size()-1){
+                for(int i=cursor->keys.size();i>index;--i){
+                    cursor->keys[i]=cursor->keys[i-1];
+                    cursor->data[i]=cursor->data[i-1];
+                }
             }
+
             cursor->keys[index]=key;
             cursor->data[index]=value;
         }
@@ -64,8 +71,8 @@ void Bplustree::insert(int key,int value){
             tmpdata.push_back(value);
 
             // key and value push into tmp node 
-            if(index!=cursor->keys.size()-1){                    //not end of vector -> shift
-                for(int j=cursor->keys.size()-1;j>index;--j){
+            if(index!=tmpkey.size()-1){                    //not end of vector -> shift
+                for(int j=tmpkey.size()-1;j>index;--j){
                     tmpkey[j]=tmpkey[j-1];
                     tmpdata[j]=tmpdata[j-1];
                 }
@@ -136,7 +143,7 @@ void Bplustree::split(int key,node** parent,node** child){
                 (*parent)->keys[i]=(*parent)->keys[i-1];
             }
             for(int i=(*parent)->prt_to_subtree.size()-1;i>index+1;--i){
-                (*parent)->keys[i]=(*parent)->keys[i-1];
+                (*parent)->prt_to_subtree[i]=(*parent)->prt_to_subtree[i-1];
             }
             (*parent)->keys[index]=key;
             (*parent)->prt_to_subtree[index+1]=*child;    
@@ -178,10 +185,10 @@ void Bplustree::split(int key,node** parent,node** child){
         }
 
         node* newnode=new node;
-        for(int i=tmpkey.size()/2;i<tmpkey.size();++i){
+        for(int i=tmpkey.size()/2+1;i<tmpkey.size();++i){
             newnode->keys.push_back(tmpkey[i]);
         }
-        for(int i=tmp_prt_to_subtree.size()/2;i<tmp_prt_to_subtree.size();--i){
+        for(int i=tmpkey.size()/2+1;i<tmp_prt_to_subtree.size();++i){
             newnode->prt_to_subtree.push_back(tmp_prt_to_subtree[i]);
         }
 
