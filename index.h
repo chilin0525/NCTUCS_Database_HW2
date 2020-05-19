@@ -37,4 +37,5 @@ class Index{
         void key_query(const vector<int> &query_keys);
         void range_query(const vector<pair<int,int> > &query_pairs);
         void clear_index();
+        void deletefun(node*);
 };

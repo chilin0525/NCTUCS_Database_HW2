@@ -121,11 +121,11 @@ void Bplustree::insert(int key,int value){
            // cout<<"i am bug1 end"<<endl;
         }
     }
-    if(key==520176)cout<<"qq "<<root->isleaf<<endl;
+   /* if(key==520176)cout<<"qq "<<root->isleaf<<endl;
     if(key==1642014)cout<<"qq2"<<endl;
     if(key==1906416)cout<<"qq3"<<endl;
     if(key==1778788)cout<<"mid"<<endl;
-    if(key==842287)cout<<"ok? "<<root->isleaf<<endl;
+    if(key==842287)cout<<"ok? "<<root->isleaf<<endl;*/
    // cout<<"insert ok"<<endl;
 }
 
@@ -219,6 +219,7 @@ void Bplustree::split(int key,node** parent,node** child){
             newroot->prt_to_subtree.push_back(*parent);
             newroot->prt_to_subtree.push_back(newnode);
             root=newroot;
+            //delete newroot;
           //  cout<<"i am bug"<<endl;
         }
         else{
@@ -229,7 +230,7 @@ void Bplustree::split(int key,node** parent,node** child){
 }
 
 node::~node(){
-    if(next) delete next;
+    //if(next) delete next;
     /*for(auto &tmp:prt_to_subtree){
         delete tmp;
     }*/
@@ -237,7 +238,7 @@ node::~node(){
 }
 
 Bplustree::~Bplustree(){
-    if(root)delete root;
+    //if(root)delete root;
     //if(parent2) delete parent2;
 }
 
@@ -274,10 +275,10 @@ void Index::key_query(const vector<int> &query_keys){
     ofstream o;
     o.open("key_query_out.txt");
     for (int i = 0; i < query_keys.size(); i++){
-        if(i==query_keys.size()-1)cout<<"here " <<endl;
+    //    if(i==query_keys.size()-1)cout<<"here " <<endl;
         o << bptree.search(query_keys[i]) << '\n';
         //if(i==0)cout<<"here"<<endl;
-        if(i==query_keys.size()-1)cout<<"here"<<endl;
+    //    if(i==query_keys.size()-1)cout<<"here"<<endl;
     } 
     o.close();
     return ;
@@ -295,11 +296,21 @@ void Index::range_query(const vector<pair<int,int> > &query_pairs){
 
 
 void Index::clear_index(){
-
-    // use destructor to clear memory used
-    //if(parent2) delete parent2;
-
+    deletefun(bptree.root);
+    //
     return ;
+}
+
+void Index::deletefun(node* parent){
+    if(parent->isleaf){
+        delete parent;
+        return ;
+    }
+    for(int i=0;i<parent->prt_to_subtree.size();++i){
+        deletefun(parent->prt_to_subtree[i]);
+    }
+    
+    delete parent;
 }
 
 
