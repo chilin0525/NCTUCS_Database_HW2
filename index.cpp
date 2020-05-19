@@ -19,7 +19,7 @@ node::node(){
 Bplustree::Bplustree(){
     this->root=NULL;
     this->maxChild=100;   
-    this->maxLeafnode=40;
+    this->maxLeafnode=220;
 }
 
 Index::Index(const int num_rows,const vector<int> &key,const vector<int> &value){
@@ -238,6 +238,7 @@ node::~node(){
 
 Bplustree::~Bplustree(){
     if(root)delete root;
+    //if(parent2) delete parent2;
 }
 
 int  Bplustree::search(const int key){
@@ -296,7 +297,8 @@ void Index::range_query(const vector<pair<int,int> > &query_pairs){
 void Index::clear_index(){
 
     // use destructor to clear memory used
-    
+    //if(parent2) delete parent2;
+
     return ;
 }
 
