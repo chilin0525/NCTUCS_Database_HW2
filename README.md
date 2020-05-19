@@ -6,7 +6,7 @@
 (where `-g` is different in makefile! be careful!)
 
 3. `valgrind --leak-check=full --show-leak-kinds=all --verbose ./hw2`
-
+(valgrind --tool=memcheck ./hw2)
 then we have detailed messages about memery leak in our code.
 
 4. if you see `All heap blocks were freed -- no leaks are possible` that ok!
