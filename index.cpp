@@ -262,6 +262,8 @@ int  Bplustree::search(const int key){
     }
 }
 
+
+
 int Bplustree::range_search(const int key1,const int key2){
     int maxn=-1e9;
     for(int i=key1;i<=key2;++i){
@@ -270,6 +272,8 @@ int Bplustree::range_search(const int key1,const int key2){
     }
     return (maxn==-1e9)?-1:maxn;
 }
+
+
 
 void Index::key_query(const vector<int> &query_keys){
     ofstream o;
@@ -306,6 +310,7 @@ void Index::deletefun(node* parent){
         delete parent;
         return ;
     }
+    
     for(int i=0;i<parent->prt_to_subtree.size();++i){
         deletefun(parent->prt_to_subtree[i]);
     }
