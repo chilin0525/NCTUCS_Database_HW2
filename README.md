@@ -12,3 +12,5 @@ then we have detailed messages about memery leak in our code.
 4. if you see `All heap blocks were freed -- no leaks are possible` that ok!
 
 ![](https://i.imgur.com/dn1xFHw.png)
+
+* 防呆一下: 最近看到有人在看, 在這裡提醒一下去年這份作業被我寫爆炸了, 學弟妹們別亂抄... 會爆炸的呦^^ 
